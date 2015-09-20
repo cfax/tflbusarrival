@@ -22,3 +22,7 @@ class Utilities(object):
         """Given the time in seconds since the epoch, return datetime object"""
         s = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(int(seconds)/1000))
         return time.strptime(s, '%d/%m/%Y %H:%M:%S')
+
+    @staticmethod
+    def format_time(datetime_object):
+        return time.strftime('%H:%M:%S', datetime_object)
