@@ -1,6 +1,7 @@
 # Collect any useful function to keep code terse and and readable
 
 import time
+from datetime import timedelta
 from urllib2 import urlopen, URLError
 
 
@@ -20,7 +21,10 @@ class Utilities(object):
     @staticmethod
     def epoch_to_localtime(seconds):
         """Given the time in seconds since the epoch, return datetime object"""
+        time.tzset('GMT')
         s = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(int(seconds)/1000))
+        if time.daylight:
+            s += timedelta(hours=1)
         return time.strptime(s, '%d/%m/%Y %H:%M:%S')
 
     @staticmethod
