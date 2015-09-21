@@ -1,7 +1,7 @@
 # Collect any useful function to keep code terse and and readable
 
+import os
 import time
-from datetime import timedelta
 from urllib2 import urlopen, URLError
 
 
@@ -20,13 +20,11 @@ class Utilities(object):
 
     @staticmethod
     def epoch_to_localtime(seconds):
-        """Given the time in seconds since the epoch, return datetime object"""
-        time.tzset('GMT')
-        s = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(int(seconds)/1000))
-        if time.daylight:
-            s += timedelta(hours=1)
-        return time.strptime(s, '%d/%m/%Y %H:%M:%S')
+        """Given the time in seconds since the epoch as string, return struct_time object"""
+        os.environ['TZ'] = 'Europe/London'
+        time.tzset()
+        return time.localtime(int(seconds)/1000)
 
     @staticmethod
-    def format_time(datetime_object):
-        return time.strftime('%H:%M:%S', datetime_object)
+    def format_time(time_struct):
+        return time.strftime('%H:%M:%S', time_struct)
