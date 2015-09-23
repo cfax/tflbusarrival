@@ -1,15 +1,17 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from tfl_api import TflApi
 from utilities import Utilities as U
 
 app = Flask(__name__)
 
 
-@app.route('/stops/<lat>/<lon>/')
-def stops(lat, lon): 
+@app.route('/stops', methods=['POST'])
+def stops():
     """Retrieve list of bus stops (type: STBC) around the user's location"""
     tfl_api = TflApi()
 
+    lat = request.form['lat']
+    lon = request.form['lon']
     stops = tfl_api.getStopList(lat, lon)
 
     stopcodes = [s['StopCode1'] for s in stops]
@@ -35,4 +37,4 @@ def main():
     return render_template('main.html')
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
