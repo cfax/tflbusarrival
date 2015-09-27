@@ -1,4 +1,4 @@
-from utilities import Utilities as U
+from utilities import Utilities
 
 
 class TflApi(object):
@@ -22,7 +22,7 @@ class TflApi(object):
                 '&StopPointState=0&StopPointType=STBC' + \
                 '&ReturnList=' + ','.join(return_list)
         url = self.__base_url + query
-        response = U.url_open(url, 'Error retrieving list of stops')
+        response = Utilities.url_open(url, 'Error retrieving list of stops')
 
         timestamp = response.readline()
         result = response.readlines()
@@ -55,7 +55,7 @@ class TflApi(object):
                 '&ReturnList=' + ','.join(return_list)
 
         url = self.__base_url + query
-        response = U.url_open(url, 'Error retrieving list of busses')
+        response = Utilities.url_open(url, 'Error retrieving list of busses')
 
         timestamp = response.readline()
         result = response.readlines()
@@ -67,7 +67,7 @@ class TflApi(object):
             # Discard first element (always 1) and replace any leading/trailing double quotes
             r = [i.strip('"') for i in r[1:]]
             # Convert epoch time to readable format
-            r = r[:-1] + [U.epoch_to_localtime(r[-1])]
+            r = r[:-1] + [Utilities.epoch_to_localtime(r[-1])]
             busses.append(dict(zip(return_list, r)))
 
         return busses
