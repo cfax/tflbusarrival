@@ -1,6 +1,12 @@
 import numpy as np
+import re
+import os
+from flask import url_for
 
 class Geo(object):
+
+    def __init__(self):
+        self.postcode_dir = os.path.join(url_for('static', filename='postcodes'))
 
     def deg2rad(self, d):
         """Convert d degrees in radians"""
@@ -10,8 +16,8 @@ class Geo(object):
         """Convert r radians in degrees"""
         return 180.*r/np.pi
 
-    def getLatitudeAndLongitude(self, N, E):
-        """Convert Northing and Easting in latitude and longitude
+    def getLatitudeAndLongitude(self, E, N):
+        """Convert Easting and Northing in latitude and longitude
         Source: http://www.ordnancesurvey.co.uk/docs/support/guide-coordinate-systems-great-britain.pdf
         """
         # Ellipsoid: Airy 1830
@@ -61,3 +67,20 @@ class Geo(object):
         lam = lam_0 + x*(E-E_0) - xi*(E-E_0)**3 + xii*(E-E_0)**5 - xiia*(E-E_0)**7
 
         return self.rad2deg(phi), self.rad2deg(lam)
+
+    def getEastingAndNorthing(self, postcode):
+        """Given a postcode, return northing and easting"""
+        postcode = postcode.upper()
+        prefix = re.match('[a-z]{1,2}', postcode.lower)
+        if not prefix:
+            raise LookupError  # TODO: create own error
+
+        for line in open(os.path.join(self.postcode_dir, prefix.group() + '.csv')):
+            full_postcode, remainder = line.split(',', 1)
+            if full_postcode.strip('"') == postcode:
+                break
+        else:
+            raise Exception # TODO create own error
+
+        _, easting, northing, _ = remainder.split(',', 4)
+        return easting, northing
