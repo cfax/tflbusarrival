@@ -3,6 +3,22 @@ import re
 import os
 from flask import url_for
 
+
+class PostcodeError(Exception):
+    """Base class of postcode-related errors"""
+    pass
+
+
+class PostcodeNotFoundError(PostcodeError):
+    """Cannot find the postcode in any file."""
+    pass
+
+
+class PostcodeMalformedError(PostcodeError):
+    """The postcode is not valid."""
+    pass
+
+
 class Geo(object):
 
     def __init__(self):
@@ -69,18 +85,22 @@ class Geo(object):
         return self.rad2deg(phi), self.rad2deg(lam)
 
     def getEastingAndNorthing(self, postcode):
-        """Given a postcode, return northing and easting"""
+        """Given a postcode, return easting and northing.
+
+        :param postcode: UK geographical postcode, composed by 1 or 2 leading letters, case-insensitive.
+        :return: easting and northing
+        """
         postcode = postcode.upper()
-        prefix = re.match('[a-z]{1,2}', postcode.lower)
+        prefix = re.match('[a-z]{1,2}[0-9]', postcode.lower())
         if not prefix:
-            raise LookupError  # TODO: create own error
+            raise PostcodeMalformedError
 
         for line in open(os.path.join(self.postcode_dir, prefix.group() + '.csv')):
             full_postcode, remainder = line.split(',', 1)
             if full_postcode.strip('"') == postcode:
                 break
         else:
-            raise Exception # TODO create own error
+            raise PostcodeNotFoundError
 
         _, easting, northing, _ = remainder.split(',', 4)
         return easting, northing
