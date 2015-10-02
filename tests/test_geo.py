@@ -4,6 +4,8 @@ from flask import url_for
 from functools import wraps
 from mock import patch, mock_open
 from nose.tools import assert_equal, assert_almost_equal, assert_raises
+import os
+import re
 
 def flask_context(f):
     @wraps(f)
@@ -48,10 +50,21 @@ class TestGetEastingAndNorthing(object):
     def test_invalid_postcode(self):
         """An error is raised if the postcode is not valid"""
         for bad_postcode in (
-            'abc12',    # three leading letters
-            '12',       # no leading letters
-            '',         # empty postcode
-            '__21ks',   # non-alphabetic character
+            'abc12',          # three leading letters
+            '12',             # no leading letters
+            '',               # empty postcode
+            '__21ks',         # non-alphabetic character
+            'Q22 1AB',        # Q cannot be in first place
+            'AJ89 1AB',       # J cannot be in second place
+            'P6V 9AB',        # V cannot be in third place
+            'UW9C 2XX',       # C cannot be in fourth place
+            'R7H 5IB',        # I cannot be in inward code
+            'R7H 5BC',        # C cannot be in inward code
+            'Z223 1AB',       # cannot have 3 numbers in outward code
+            'YZ2N AB',        # cannot have 0 numbers in outward code
+            'YZ2N 12AB',      # cannot have 2 numbers in outward code
+            'N1 1AAX',        # correct postcode, but wrong trailing character
+            'XNN1 1AA',       # correct postcode, but wrong leading character
         ):
             yield self.check_invalid_postcode, bad_postcode
 
@@ -66,7 +79,7 @@ class TestGetEastingAndNorthing(object):
     def test_postcode_not_found(self):
         """An error is raised if the postcode cannot be found"""
         for file_content, postcode in (
-            ('', 'n11nn'),                    # empty file
+            ('', 'n11nn'),                               # empty file
             ([self.valid_entry_one_letter], 'n11nn'),    # completely different postcode
             ([self.valid_entry_one_letter], 'n99zz'),    # partially matching postcode
         ):
@@ -79,6 +92,11 @@ class TestGetEastingAndNorthing(object):
             g = Geo()
             e, n = g.getEastingAndNorthing(postcode)
             assert_equal((e, n), expected_result)
+
+        postcode_dir = url_for('static', filename='postcodes')
+        filename = re.match('([a-z]{1,2})[0-9]', postcode.replace(' ', '')).group(1)
+        filename = os.path.join(postcode_dir, filename + '.csv')
+        self.m.assert_called_once_with(filename)
 
     def test_postcode_found(self):
         """Test that postcodes that have entries in the DB are found"""

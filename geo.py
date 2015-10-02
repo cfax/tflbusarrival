@@ -23,6 +23,12 @@ class Geo(object):
 
     def __init__(self):
         self.postcode_dir = os.path.join(url_for('static', filename='postcodes'))
+        # Postcode regex. Notice we don't care about the Girobank's postcode.
+        self.postcode_re = re.compile('(([A-PR-UWYZ][0-9][0-9]?)|' +                    # outward code
+                                      '(([A-PR-UWYZ][A-HK-Z][0-9][0-9]?)|' +            #
+                                      '(([A-PR-UWYZ][0-9][A-HJKPSTUW])|' +              #
+                                      '([A-PR-UWYZ][A-HK-Z][0-9][ABEHMNPRVWXY]))))' +   # end of outward code
+                                      '[0-9][ABD-HJLNP-UW-Z]{2}$')                      # inward code
 
     def deg2rad(self, d):
         """Convert d degrees in radians"""
@@ -90,14 +96,16 @@ class Geo(object):
         :param postcode: UK geographical postcode, composed by 1 or 2 leading letters, case-insensitive.
         :return: easting and northing
         """
-        postcode = postcode.replace(' ','').upper()
-        prefix = re.match('[a-z]{1,2}[0-9]', postcode.lower())
-        if not prefix:
-            raise PostcodeMalformedError
 
-        for line in open(os.path.join(self.postcode_dir, prefix.group() + '.csv')):
+        # Validate postcode
+        postcode = self.postcode_re.match(postcode.replace(' ', '').upper())
+        if not postcode:
+            raise PostcodeMalformedError
+        prefix = re.match('([A-Z]{1,2})[0-9]', postcode.group())
+
+        for line in open(os.path.join(self.postcode_dir, prefix.group(1).lower() + '.csv')):
             full_postcode, remainder = line.split(',', 1)
-            if full_postcode.strip('"').replace(' ','') == postcode:
+            if full_postcode.strip('"').replace(' ', '') == postcode.group():
                 break
         else:
             raise PostcodeNotFoundError
