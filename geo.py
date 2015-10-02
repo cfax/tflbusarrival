@@ -90,17 +90,17 @@ class Geo(object):
         :param postcode: UK geographical postcode, composed by 1 or 2 leading letters, case-insensitive.
         :return: easting and northing
         """
-        postcode = postcode.upper()
+        postcode = postcode.replace(' ','').upper()
         prefix = re.match('[a-z]{1,2}[0-9]', postcode.lower())
         if not prefix:
             raise PostcodeMalformedError
 
         for line in open(os.path.join(self.postcode_dir, prefix.group() + '.csv')):
             full_postcode, remainder = line.split(',', 1)
-            if full_postcode.strip('"') == postcode:
+            if full_postcode.strip('"').replace(' ','') == postcode:
                 break
         else:
             raise PostcodeNotFoundError
 
-        _, easting, northing, _ = remainder.split(',', 4)
+        _, easting, northing, _ = remainder.split(',', 3)
         return easting, northing

@@ -27,9 +27,13 @@ def test_getLatitudeAndLongitude():
 
 
 class TestGetEastingAndNorthing(object):
+    """Collect all tests related to 'getEastingAndNorthing' method"""
 
     def __init__(self):
-        self.valid_entry = '"N9  9ZW",10,534152,193613,"E92000001","E19000003","E18000007","","E09000010","E05000197"\r\n'
+        self.valid_entry_one_letter = \
+            '"N9  9ZW",10,534152,193613,"E92000001","E19000003","E18000007","","E09000010","E05000197"\r\n'
+        self.valid_entry_two_letters = \
+            '"SE9 9DE",10,542733,174310,"E92000001","E19000003","E18000007","","E09000011","E05000219"\r\n'
 
     def setup(self):
         self.m = mock_open()
@@ -48,8 +52,6 @@ class TestGetEastingAndNorthing(object):
             '12',       # no leading letters
             '',         # empty postcode
             '__21ks',   # non-alphabetic character
-            'n 12ff',   # leading letter ok, space following
-            'nw 12ff',  # two leading letters ok, space following
         ):
             yield self.check_invalid_postcode, bad_postcode
 
@@ -65,7 +67,31 @@ class TestGetEastingAndNorthing(object):
         """An error is raised if the postcode cannot be found"""
         for file_content, postcode in (
             ('', 'n11nn'),                    # empty file
-            ([self.valid_entry], 'n11nn'),    # completely different postcode
-            ([self.valid_entry], 'n99zz'),    # partially matching postcode
+            ([self.valid_entry_one_letter], 'n11nn'),    # completely different postcode
+            ([self.valid_entry_one_letter], 'n99zz'),    # partially matching postcode
         ):
             yield self.check_postcode_not_found, file_content, postcode
+
+    @flask_context
+    def check_postcode_found(self, postcode, expected_result):
+        self.m.return_value = [self.valid_entry_one_letter, self.valid_entry_two_letters]
+        with patch('geo.open', self.m, create=True):
+            g = Geo()
+            e, n = g.getEastingAndNorthing(postcode)
+            assert_equal((e, n), expected_result)
+
+    def test_postcode_found(self):
+        """Test that postcodes that have entries in the DB are found"""
+        _, _, one_E, one_N, _ = self.valid_entry_one_letter.split(',', 4)
+        _, _, two_E, two_N, _ = self.valid_entry_two_letters.split(',', 4)
+
+        for postcode, result in (
+            ('n99zw',         (one_E, one_N)),    # one leading letter, no spaces
+            ('n9 9zw',        (one_E, one_N)),    # one leading letter, one space
+            ('n9  9zw',       (one_E, one_N)),    # one leading letter, two spaces
+            ('n  9  9  z  w', (one_E, one_N)),    # one leading letter, a few spaces
+            ('se99de',        (two_E, two_N)),    # two leading letters, no spaces
+            ('se9 9de',       (two_E, two_N)),    # two leading letters, one space
+            ('s e99d e',      (two_E, two_N)),    # two leading letters, a few spaces
+        ):
+            yield self.check_postcode_found, postcode, result
