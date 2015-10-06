@@ -1,4 +1,6 @@
 from utilities import Utilities
+from urllib2 import urlopen, URLError
+from itertools import chain
 
 
 class TflApi(object):
@@ -21,8 +23,13 @@ class TflApi(object):
                 radius + ',' + \
                 '&StopPointState=0&StopPointType=STBC' + \
                 '&ReturnList=' + ','.join(return_list)
+
         url = self.__base_url + query
-        response = Utilities.url_open(url, 'Error retrieving list of stops')
+        try:
+            response = urlopen(url, data=None, timeout=10)
+        except URLError as e:
+            e.args = chain(e.args, ['Error retrieving list of stops'])
+            raise
 
         timestamp = response.readline()
         result = response.readlines()
@@ -35,7 +42,6 @@ class TflApi(object):
             r = [i.strip('"') for i in r[1:]]
             stops.append(dict(zip(return_list, r)))
 
-        # stopcode_list = [s['StopCode1'] for s in stops]
         return stops
 
     def getBusList(self, stopcode_list):
@@ -55,7 +61,11 @@ class TflApi(object):
                 '&ReturnList=' + ','.join(return_list)
 
         url = self.__base_url + query
-        response = Utilities.url_open(url, 'Error retrieving list of busses')
+        try:
+            response = urlopen(url, data=None, timeout=10)
+        except URLError:
+            e.args = chain(e.args, ['Error retrieving list of busses'])
+            raise
 
         timestamp = response.readline()
         result = response.readlines()

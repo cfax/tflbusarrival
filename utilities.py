@@ -2,21 +2,10 @@
 
 import os
 import time
-from urllib2 import urlopen, URLError
 
 
 class Utilities(object):
     """Collection of static methods to improve code readability"""
-
-    @staticmethod
-    def url_open(url, error_msg):
-        """Open the url and return the response. On failure, return the error message."""
-        try:
-            response = urlopen(url, data=None, timeout=10)
-        except URLError:
-            return error_msg
-
-        return response
 
     @staticmethod
     def epoch_to_localtime(seconds):
