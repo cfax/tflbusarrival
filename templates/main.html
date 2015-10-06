@@ -1,40 +1,15 @@
-<html>
-<head>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-</head>
-<body>
-    <div class="main">
-    </div>
-    <div>
-        <form style="display: visible" action="/stops" method="POST" id="coordinates_form">
-            <input type="hidden" id="lat" name="lat" value=""/>
-            <input type="hidden" id="lon" name="lon" value=""/>
-        </form>
-    </div>
-
-    <script src="{{ url_for('static', filename='geoPosition.js') }}" type="text/javascript" charset="utf-8"></script>
-    <script src="{{ url_for('static', filename='jquery-2.1.4.min.js') }}" type="text/javascript" charset="utf-8"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
-    <script type="text/javascript">
-    if (geoPosition.init()) {
-        geoPosition.getCurrentPosition(success_f, error_f, {enableHighAccuracy:true});
-    } else {
-        error_f(" X.");
-    }
-
-    function success_f(p) {
-        $("#lat").val(p.coords.latitude);
-        $("#lon").val(p.coords.longitude);
-        $("#coordinates_form").submit();
-    }
-
-    function error_f(p) {
-        alert("Unable to determine your location." + p);
-    }
-    </script>
-
-</body>
-<html>
+{% extends 'common.html' %}
+{% block content %}
+        <div class="main">
+          <h1>Bus stops</h1>
+            <div id="maindiv">
+                <p class="lead"></p>
+                <form style="display: visible" action="/stops" method="POST" id="coordinates_form">
+                    <input type="hidden" id="lat" name="lat" value=""/>
+                    <input type="hidden" id="lon" name="lon" value=""/>
+                </form>
+            </div>
+        </div>
+        <div class="main">
+        </div>
+{% endblock %}

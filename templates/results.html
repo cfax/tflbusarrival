@@ -1,0 +1,31 @@
+{% extends 'common.html' %}
+{% block content %}
+        <div class="main">
+          <h1>Bus stops</h1>
+            <div id="maindiv">
+                {% if results %}
+                {% for stop in results %}
+                <h4>{{ stop.name }}</h4>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Direction</th>
+                        <th>ETA</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for bus in stop.busses %}
+                    <tr>
+                        <td>{{ bus.number }}</td>
+                        <td>{{ bus.direction }}</td>
+                        <td>{{ bus.eta }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+{% endblock %}
