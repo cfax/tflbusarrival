@@ -48,9 +48,15 @@ def stops():
 
     return render_template('results.html', results=results)
 
+
+@app.route("/about")
+def about():
+    return render_template('about.html')
+
+
 @app.route("/")
-def main():
+def home():
     return render_template('main.html')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run('0.0.0.0', debug=True)
