@@ -21,14 +21,21 @@ class PostcodeMalformedError(PostcodeError):
 
 class Geo(object):
 
-    def __init__(self):
-        self.postcode_dir = os.path.join(url_for('static', filename='postcodes'))
+    def __init__(self, postcode):
+        """Initialize the object with the specified postcode"""
+        self.postcode_dir = '.' + url_for('static', filename='postcodes')
         # Postcode regex. Notice we don't care about the Girobank's postcode.
         self.postcode_re = re.compile('(([A-PR-UWYZ][0-9][0-9]?)|' +                    # outward code
                                       '(([A-PR-UWYZ][A-HK-Z][0-9][0-9]?)|' +            #
                                       '(([A-PR-UWYZ][0-9][A-HJKPSTUW])|' +              #
                                       '([A-PR-UWYZ][A-HK-Z][0-9][ABEHMNPRVWXY]))))' +   # end of outward code
                                       '[0-9][ABD-HJLNP-UW-Z]{2}$')                      # inward code
+
+        # Validate postcode
+        postcode = self.postcode_re.match(postcode.replace(' ', '').upper())
+        if not postcode:
+            raise PostcodeMalformedError
+        self.postcode = postcode.group()
 
     def deg2rad(self, d):
         """Convert d degrees in radians"""
@@ -38,10 +45,11 @@ class Geo(object):
         """Convert r radians in degrees"""
         return 180.*r/np.pi
 
-    def getLatitudeAndLongitude(self, E, N):
+    def getLatitudeAndLongitude(self):
         """Convert Easting and Northing in latitude and longitude
         Source: http://www.ordnancesurvey.co.uk/docs/support/guide-coordinate-systems-great-britain.pdf
         """
+        E, N = self.getEastingAndNorthing()
         # Ellipsoid: Airy 1830
         a = 6377563.396  # semi-major axis [m]
         b = 6356256.909  # semi-minor axis [m]
@@ -90,25 +98,21 @@ class Geo(object):
 
         return self.rad2deg(phi), self.rad2deg(lam)
 
-    def getEastingAndNorthing(self, postcode):
-        """Given a postcode, return easting and northing.
+    def getEastingAndNorthing(self):
+        """Return easting and northing for this postcode.
 
-        :param postcode: UK geographical postcode, composed by 1 or 2 leading letters, case-insensitive.
         :return: easting and northing
         """
 
         # Validate postcode
-        postcode = self.postcode_re.match(postcode.replace(' ', '').upper())
-        if not postcode:
-            raise PostcodeMalformedError
-        prefix = re.match('([A-Z]{1,2})[0-9]', postcode.group())
+        prefix = re.match('([A-Z]{1,2})[0-9]', self.postcode)
 
         for line in open(os.path.join(self.postcode_dir, prefix.group(1).lower() + '.csv')):
             full_postcode, remainder = line.split(',', 1)
-            if full_postcode.strip('"').replace(' ', '') == postcode.group():
+            if full_postcode.strip('"').replace(' ', '') == self.postcode:
                 break
         else:
             raise PostcodeNotFoundError
 
         _, easting, northing, _ = remainder.split(',', 3)
-        return easting, northing
+        return float(easting), float(northing)
