@@ -1,15 +1,37 @@
 {% extends 'common.html' %}
 {% block content %}
         <div class="main">
-          <h1>Bus stops</h1>
-            <div id="maindiv">
-                <p class="lead"></p>
-                <form style="display: visible" action="/stops" method="POST" id="coordinates_form">
-                    <input type="hidden" id="lat" name="lat" value=""/>
-                    <input type="hidden" id="lon" name="lon" value=""/>
-                </form>
-            </div>
-        </div>
-        <div class="main">
+            <form style="display: visible" action="/stops" method="POST" id="coordinates_form">
+                <input type="hidden" id="lat" name="lat" value=""/>
+                <input type="hidden" id="lon" name="lon" value=""/>
+            </form>
+
+            <form style="visibility: hidden" action="/stops" method="POST" id="postcode_form">
+                <p class="lead">I cannot find your location.</p>
+                <label>Postcode?
+                    <input type="text" id="postcode" name="postcode" value=""/>
+                </label>
+                <input id="submit_postcode" type="button" value="Submit"/>
+            </form>
+
+            <script type="text/javascript" defer="defer">
+
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(success, error, {enableHighAccuracy: true});
+} else {
+  error("");
+}
+
+function success(p) {
+    $("#lat").val(p.coords.latitude);
+    $("#lon").val(p.coords.longitude);
+    $("#coordinates_form").submit();
+}
+
+function error(p) {
+    $("#postcode_form").css("visibility", "visible");
+}
+            </script>
+
         </div>
 {% endblock %}

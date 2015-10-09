@@ -10,7 +10,6 @@
 
     <title>Bus arrival times</title>
 
-    <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
@@ -49,35 +48,30 @@
         {% block content %}
         {% endblock %}
 
-        <script src="{{ url_for('static', filename='geoPosition.js') }}" type="text/javascript" charset="utf-8"></script>
         <script src="{{ url_for('static', filename='jquery-2.1.4.min.js') }}" type="text/javascript" charset="utf-8"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
-        <script type="text/javascript">
-    if (geoPosition.init()) {
-        geoPosition.getCurrentPosition(success_f, error_f, {enableHighAccuracy:true});
-    } else {
-        error_f("");
-    }
+        <!-- jQuery -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="{{ url_for('static', filename='jquery-2.1.4.min.js') }}"><\/script>')</script>
 
-    function success_f(p) {
-        $("#lat").val(p.coords.latitude);
-        $("#lon").val(p.coords.longitude);
-        $("#coordinates_form").submit();
-    }
-
-    function error_f(p) {
-        $("#lat").val(0);
-        $("#lon").val(0);
-        $("#coordinates_form").submit();
-    }
-    </script>
-
-
+        <!-- Bootstrap -->
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script>window.jQuery.fn.modal || document.write('<script src="{{ url_for('static', filename='bootstrap-3.3.5.min.js') }}"><\/script>')</script>
+        <script>
+    (function($) {
+        $(function() {
+            if ($('body').css('color') !== 'rgb(51, 51, 51)') {
+                $('head').prepend('<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-3.3.5.min.css') }}">');
+                $('head').prepend('<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-theme-3.3.5.min.css') }}">');
+            }
+        });
+    })(window.jQuery);
+        </script>
     </div><!-- /.container -->
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="../../dist/js/bootstrap.min.js"></script>
-    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
+    <!--<script src="../../dist/js/bootstrap.min.js"></script>-->
+    <script src="{{ url_for('static', filename='ie10-viewport-bug-workaround.js') }}"></script>
   </body>
 </html>
